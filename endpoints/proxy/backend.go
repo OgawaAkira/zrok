@@ -83,11 +83,14 @@ func newReverseProxy(cfg *BackendConfig) (*httputil.ReverseProxy, error) {
 	}
 
 	tpt := http.DefaultTransport.(*http.Transport).Clone()
+	tpt.IdleConnTimeout = 0
+	tpt.ResponseHeaderTimeout = 0
 	if cfg.Insecure {
 		tpt.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	}
 
 	proxy := httputil.NewSingleHostReverseProxy(targetURL)
+	proxy.FlushInterval = -1
 	proxy.Transport = tpt
 	director := proxy.Director
 	proxy.Director = func(req *http.Request) {

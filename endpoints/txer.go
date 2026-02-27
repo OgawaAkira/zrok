@@ -7,7 +7,7 @@ import (
 	"github.com/michaelquigley/df/dl"
 )
 
-const bufSz = 10240
+const bufSz = 1048576 // 1 MB de buffer (Ideal para streaming)
 
 func TXer(from, to net.Conn) {
 	dl.Debugf("started '%v' -> '%v'", from.RemoteAddr(), to.RemoteAddr())

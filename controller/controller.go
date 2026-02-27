@@ -170,16 +170,17 @@ func Run(inCfg *config.Config) error {
 			return errors.Wrap(err, "error starting metrics agent")
 		}
 		defer func() { ma.Stop() }()
-
-		if cfg.Limits != nil && cfg.Limits.Enforcing {
-			limitsAgent, err = limits.NewAgent(cfg.Limits, cfg.Metrics.Influx, cfg.Ziti, cfg.Email, str)
-			if err != nil {
-				return errors.Wrap(err, "error creating limits agent")
+		/*
+			if cfg.Limits != nil && cfg.Limits.Enforcing {
+				limitsAgent, err = limits.NewAgent(cfg.Limits, cfg.Metrics.Influx, cfg.Ziti, cfg.Email, str)
+				if err != nil {
+					return errors.Wrap(err, "error creating limits agent")
+				}
+				ma.AddUsageSink(limitsAgent)
+				limitsAgent.Start()
+				defer func() { limitsAgent.Stop() }()
 			}
-			ma.AddUsageSink(limitsAgent)
-			limitsAgent.Start()
-			defer func() { limitsAgent.Stop() }()
-		}
+		*/
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -208,6 +209,7 @@ func Run(inCfg *config.Config) error {
 		server.Host = cfg.Endpoint.Host
 		server.Port = cfg.Endpoint.Port
 	}
+
 	rest_server_zrok.HealthCheck = HealthCheckHTTP
 	server.ConfigureAPI()
 	if err := server.Serve(); err != nil {

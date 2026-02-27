@@ -2,10 +2,10 @@ package controller
 
 import (
 	"errors"
+	"strings"
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/lib/pq"
-	"github.com/mattn/go-sqlite3"
 	"github.com/michaelquigley/df/dl"
 	"github.com/openziti/zrok/v2/controller/automation"
 	"github.com/openziti/zrok/v2/controller/store"
@@ -66,18 +66,15 @@ func (h *createFrontendHandler) Handle(params admin.CreateFrontendParams, princi
 	}
 	if _, err := str.CreateGlobalFrontend(fe, trx); err != nil {
 		perr := &pq.Error{}
-		sqliteErr := &sqlite3.Error{}
 		switch {
 		case errors.As(err, &perr):
 			if perr.Code == pq.ErrorCode("23505") {
 				dl.Errorf("error creating frontend record: %v", err)
 				return admin.NewCreateFrontendBadRequest()
 			}
-		case errors.As(err, sqliteErr):
-			if errors.Is(sqliteErr.Code, sqlite3.ErrConstraint) {
-				dl.Errorf("error creating frontend record: %v", err)
-				return admin.NewCreateFrontendBadRequest()
-			}
+		case strings.Contains(err.Error(), "UNIQUE constraint failed"):
+			dl.Errorf("error creating frontend record: %v", err)
+			return admin.NewCreateFrontendBadRequest()
 		}
 
 		dl.Errorf("error creating frontend record: %v", err)

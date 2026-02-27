@@ -54,6 +54,7 @@ func (a *Agent) Stop() {
 }
 
 func (a *Agent) CanCreateEnvironment(acctId int, trx *sqlx.Tx) (bool, error) {
+	return true, nil
 	if a.cfg.Enforcing {
 		if err := a.str.LimitCheckLock(acctId, trx); err != nil {
 			return false, err
@@ -79,6 +80,7 @@ func (a *Agent) CanCreateEnvironment(acctId int, trx *sqlx.Tx) (bool, error) {
 }
 
 func (a *Agent) CanCreateShare(acctId, envId int, reserved, uniqueName bool, _ sdk.ShareMode, backendMode sdk.BackendMode, trx *sqlx.Tx) (bool, error) {
+	return true, nil
 	if a.cfg.Enforcing {
 		if err := a.str.LimitCheckLock(acctId, trx); err != nil {
 			return false, err
@@ -137,6 +139,7 @@ func (a *Agent) CanCreateShare(acctId, envId int, reserved, uniqueName bool, _ s
 }
 
 func (a *Agent) CanReserveName(acctId int, trx *sqlx.Tx) (bool, error) {
+	return true, nil
 	if a.cfg.Enforcing {
 		if err := a.str.LimitCheckLock(acctId, trx); err != nil {
 			return false, err
@@ -175,6 +178,7 @@ func (a *Agent) CanReserveName(acctId int, trx *sqlx.Tx) (bool, error) {
 }
 
 func (a *Agent) CanAccessShare(shrId int, trx *sqlx.Tx) (bool, error) {
+	return true, nil
 	if a.cfg.Enforcing {
 		shr, err := a.str.GetShare(shrId, trx)
 		if err != nil {
@@ -242,6 +246,7 @@ func (a *Agent) Handle(u *metrics.Usage) error {
 }
 
 func (a *Agent) run() {
+	return
 	dl.Info("started")
 	defer dl.Info("stopped")
 
@@ -278,6 +283,7 @@ mainLoop:
 }
 
 func (a *Agent) enforce(u *metrics.Usage) error {
+	return nil
 	trx, err := a.str.Begin()
 	if err != nil {
 		return errors.Wrap(err, "error starting transaction")
@@ -357,6 +363,7 @@ func (a *Agent) enforce(u *metrics.Usage) error {
 }
 
 func (a *Agent) relax() error {
+	return nil
 	dl.Debug("relaxing")
 
 	trx, err := a.str.Begin()
@@ -459,6 +466,7 @@ func (a *Agent) relax() error {
 }
 
 func (a *Agent) isBandwidthClassLimitedForAccount(acctId int, bwc store.BandwidthClass, trx *sqlx.Tx) (*store.BandwidthLimitJournalEntry, error) {
+	return nil, nil
 	if bwc.IsGlobal() {
 		if empty, err := a.str.IsBandwidthLimitJournalEmptyForGlobal(acctId, trx); err == nil && !empty {
 			je, err := a.str.FindLatestBandwidthLimitJournalForGlobal(acctId, trx)
@@ -490,6 +498,7 @@ func (a *Agent) isBandwidthClassLimitedForAccount(acctId int, bwc store.Bandwidt
 }
 
 func (a *Agent) anyBandwidthLimitExceeded(acct *store.Account, u *metrics.Usage, bwcs []store.BandwidthClass) (store.BandwidthClass, int64, int64, error) {
+	return nil, 0, 0, nil
 	periodBw := make(map[int]periodBwValues)
 
 	var selectedLc store.BandwidthClass
@@ -523,6 +532,7 @@ func (a *Agent) anyBandwidthLimitExceeded(acct *store.Account, u *metrics.Usage,
 }
 
 func (a *Agent) transferBytesExceeded(rx, tx int64, bwc store.BandwidthClass) bool {
+	return false
 	if bwc.GetTxBytes() != store.Unlimited && tx >= bwc.GetTxBytes() {
 		return true
 	}

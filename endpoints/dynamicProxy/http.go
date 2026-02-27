@@ -80,6 +80,8 @@ func newHttpListener(cfg *config) (*httpListener, error) {
 	}
 	zTransport := http.DefaultTransport.(*http.Transport).Clone()
 	zTransport.DialContext = zDialCtx.Dial
+	zTransport.IdleConnTimeout = 0
+	zTransport.ResponseHeaderTimeout = 0
 
 	if err := configureOauth(cfg, cfg.Tls != nil); err != nil {
 		return nil, err
@@ -109,12 +111,17 @@ func (c *zitiDialContext) Dial(_ context.Context, _ string, addr string) (net.Co
 
 func newServiceProxy(cfg *config, ctx ziti.Context, mappings *mappings) (*httputil.ReverseProxy, error) {
 	proxy := hostTargetReverseProxy(cfg, ctx, mappings)
+	proxy.FlushInterval = -1
 	director := proxy.Director
 	proxy.Director = func(req *http.Request) {
 		director(req)
 		req.Header.Set("X-Proxy", "zrok")
 	}
 	proxy.ModifyResponse = func(resp *http.Response) error {
+		resp.Header.Set("Access-Control-Allow-Origin", "*")
+		resp.Header.Set("Access-Control-Allow-Methods", "GET, HEAD, OPTIONS")
+		resp.Header.Set("Access-Control-Allow-Headers", "Range, If-Range, Content-Type")
+		resp.Header.Set("Access-Control-Expose-Headers", "Content-Range, Content-Length, Accept-Ranges")
 		return nil
 	}
 	proxy.ErrorHandler = func(w http.ResponseWriter, r *http.Request, err error) {
@@ -229,6 +236,7 @@ func shareHandler(handler http.Handler, cfg *config, signingKey []byte, ctx ziti
 }
 
 func handleInterstitial(w http.ResponseWriter, r *http.Request, pcfg *config, cfg map[string]interface{}) bool {
+	return false
 	if r.Method == http.MethodOptions || pcfg.Interstitial == nil || !pcfg.Interstitial.Enabled {
 		return false
 	}
@@ -291,6 +299,10 @@ func (l *httpListener) Start() error {
 	l.server = &http.Server{
 		Addr:    l.cfg.BindAddress,
 		Handler: l.handler,
+		ReadTimeout:       0,    // ← Sem timeout de leitura
+		WriteTimeout:      0,    // ← Sem timeout de escrita
+		ReadHeaderTimeout: 30 * time.Second, // ← Apenas headers
+		IdleTimeout:       0,    // ← Sem timeout de inatividade
 	}
 
 	if l.cfg.Tls != nil {

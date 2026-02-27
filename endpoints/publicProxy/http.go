@@ -67,6 +67,10 @@ func NewHTTP(cfg *Config) (*HttpFrontend, error) {
 	zTransport := http.DefaultTransport.(*http.Transport).Clone()
 	zTransport.DialContext = zDialCtx.Dial
 
+	// Remove limite de inatividade da rede
+	zTransport.IdleConnTimeout = 0
+	zTransport.ResponseHeaderTimeout = 0
+
 	proxy, err := newServiceProxy(cfg, zCtx)
 	if err != nil {
 		return nil, err
@@ -105,12 +109,20 @@ func (c *zitiDialContext) Dial(_ context.Context, _ string, addr string) (net.Co
 
 func newServiceProxy(cfg *Config, ctx ziti.Context) (*httputil.ReverseProxy, error) {
 	proxy := hostTargetReverseProxy(cfg, ctx)
+
+	// Força o envio imediato de dados (ideal para streaming de vídeo)
+	proxy.FlushInterval = -1
+
 	director := proxy.Director
 	proxy.Director = func(req *http.Request) {
 		director(req)
 		req.Header.Set("X-Proxy", "zrok")
 	}
 	proxy.ModifyResponse = func(resp *http.Response) error {
+		resp.Header.Set("Access-Control-Allow-Origin", "*")
+		resp.Header.Set("Access-Control-Allow-Methods", "GET, HEAD, OPTIONS")
+		resp.Header.Set("Access-Control-Allow-Headers", "Range, If-Range, Content-Type")
+		resp.Header.Set("Access-Control-Expose-Headers", "Content-Range, Content-Length, Accept-Ranges")
 		return nil
 	}
 	proxy.ErrorHandler = func(w http.ResponseWriter, r *http.Request, err error) {
@@ -223,6 +235,7 @@ func shareHandler(handler http.Handler, cfg *Config, signingKey []byte, ctx ziti
 }
 
 func handleInterstitial(w http.ResponseWriter, r *http.Request, pcfg *Config, cfg map[string]interface{}) bool {
+	return false
 	if r.Method == http.MethodOptions || pcfg.Interstitial == nil || !pcfg.Interstitial.Enabled {
 		return false
 	}

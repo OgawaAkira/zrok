@@ -21,6 +21,7 @@ func newLimitAction(str *store.Store, zCfg *automation.Config) *limitAction {
 }
 
 func (a *limitAction) HandleAccount(acct *store.Account, _, _ int64, bwc store.BandwidthClass, ul *userLimits, trx *sqlx.Tx) error {
+	return nil
 	envs, err := a.str.FindEnvironmentsForAccount(acct.Id, trx)
 	if err != nil {
 		return errors.Wrapf(err, "error finding environments for account '%v'", acct.Email)

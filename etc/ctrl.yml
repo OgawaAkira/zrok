@@ -82,11 +82,11 @@ invites:
   #
   # Setting `invites_open` to `true` will allow your service instance to allow users to request invites.
   #
-  invites_open:                   false
+  invites_open:                   true
   #
   # Setting `token_strategy` to `store` will use the `invite_tokens` table in the database for available invite tokens.
   #
-  token_strategy:                 store
+  token_strategy:                 none
   #
   # Setting `token_contact` to something other than an empty string will show the contact information in the
   # `zrok invite` command.
@@ -108,11 +108,11 @@ limits:
     warning:
       rx:           -1
       tx:           -1
-      total:        7242880
+      total:        -1
     limit:
       rx:           -1
       tx:           -1
-      total:        10485760
+      total:        -1
   enforcing:        false
   cycle:            5m
 

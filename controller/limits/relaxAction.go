@@ -20,6 +20,7 @@ func newRelaxAction(str *store.Store, zCfg *automation.Config) *relaxAction {
 }
 
 func (a *relaxAction) HandleAccount(acct *store.Account, _, _ int64, bwc store.BandwidthClass, _ *userLimits, trx *sqlx.Tx) error {
+	return nil
 	dl.Debugf("relaxing '%v'", acct.Email)
 
 	envs, err := a.str.FindEnvironmentsForAccount(acct.Id, trx)

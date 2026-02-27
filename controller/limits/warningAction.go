@@ -21,6 +21,7 @@ func newWarningAction(cfg *emailUi.Config, str *store.Store) *warningAction {
 }
 
 func (a *warningAction) HandleAccount(acct *store.Account, rxBytes, txBytes int64, bwc store.BandwidthClass, _ *userLimits, _ *sqlx.Tx) error {
+	return nil
 	dl.Infof("warning '%v'", acct.Email)
 
 	if a.cfg != nil {

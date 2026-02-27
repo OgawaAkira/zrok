@@ -68,6 +68,8 @@ func NewFrontend(cfg *FrontendConfig) (*Frontend, error) {
 	zDialCtx := zitiDialContext{ctx: zCtx, shrToken: cfg.ShrToken}
 	zTransport := http.DefaultTransport.(*http.Transport).Clone()
 	zTransport.DialContext = zDialCtx.Dial
+	zTransport.IdleConnTimeout = 0
+	zTransport.ResponseHeaderTimeout = 0
 
 	proxy, err := newServiceProxy(cfg, zCtx)
 	if err != nil {
@@ -105,6 +107,7 @@ func (zdc *zitiDialContext) Dial(_ context.Context, _ string, addr string) (net.
 
 func newServiceProxy(cfg *FrontendConfig, ctx ziti.Context) (*httputil.ReverseProxy, error) {
 	proxy := serviceTargetProxy(cfg, ctx)
+	proxy.FlushInterval = -1
 	director := proxy.Director
 	proxy.Director = func(req *http.Request) {
 		if cfg.RequestsChan != nil {

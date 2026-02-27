@@ -13,10 +13,10 @@ v: 4
 # Configure interstitial pages for this frontend. The interstitial page presents a warning to internet users, alerting
 # them to the fact that they're visiting a zrok share.
 #
-#interstitial:
+interstitial:
 #  # Enable or disable interstitial pages on this frontend.
 #  #
-#  enabled: true
+  enabled: false
 #
 #  # Specify a path to an external HTML file containing the interstitial page. Leaving out of configuration will fall back
 #  # to embedded interstitial HTML. See `endpoints/publicProxy/interstitialUi/index.html` for details on how the page works.
